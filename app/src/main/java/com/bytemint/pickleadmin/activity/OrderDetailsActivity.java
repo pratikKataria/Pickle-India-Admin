@@ -7,13 +7,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.bytemint.pickleadmin.adapter.OrderDetailRecyclerViewAdapter;
 import com.bytemint.pickleadmin.databinding.ActivityOrderDetailsBinding;
+import com.bytemint.pickleadmin.model.OfferCombo;
 import com.bytemint.pickleadmin.model.Orders;
 import com.bytemint.pickleadmin.R;
 import com.bytemint.pickleadmin.model.OrdersDetails;
+import com.bytemint.pickleadmin.model.ProductModel;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
@@ -29,8 +32,11 @@ import java.util.Map;
 public class OrderDetailsActivity extends AppCompatActivity {
 
     private ArrayList<OrdersDetails> ordersDetailsArrayList = new ArrayList<>();
+    private ArrayList<OrdersDetails> comboList = new ArrayList<>();
+
     private ActivityOrderDetailsBinding orderDetailsBinding;
     private OrderDetailRecyclerViewAdapter adapter;
+    private OrderDetailRecyclerViewAdapter comboAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,11 +44,24 @@ public class OrderDetailsActivity extends AppCompatActivity {
         orderDetailsBinding = DataBindingUtil.setContentView(this, R.layout.activity_order_details);
         setUserNameAndUserPhoneNumber();
         initRecyclerView();
+        initRecyclerViewCombo();
         userOrderedProducts();
+        getComboList();
 
         orderDetailsBinding.ordercompleted.setOnClickListener(n -> {
             updateOrder();
         });
+
+
+    }
+
+    private Orders getArgumentExtra() {
+        Orders orders = new Orders();
+        Bundle bundle = getIntent().getExtras();
+        if (bundle != null && bundle.containsKey("userId")) {
+            orders = (Orders) bundle.getSerializable("userId");
+        }
+        return orders;
     }
 
     public void updateOrder() {
@@ -61,13 +80,64 @@ public class OrderDetailsActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
     }
 
-    private Orders getArgumentExtra() {
-        Orders orders = new Orders();
-        Bundle bundle = getIntent().getExtras();
-        if (bundle != null && bundle.containsKey("userId")) {
-            orders = (Orders) bundle.getSerializable("userId");
+    private void initRecyclerViewCombo() {
+        RecyclerView comboRecyclerView = orderDetailsBinding.comboRecyclerView;
+        comboAdapter = new OrderDetailRecyclerViewAdapter(comboList, this);
+        comboRecyclerView.setAdapter(comboAdapter);
+    }
+
+    private void getComboList() {
+        Orders orders = getArgumentExtra();
+
+        if (orders != null && orders.getComboId() != null) {
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Offers").child(orders.getComboId());
+            reference.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    Log.e("OrderDetailsActivity ", dataSnapshot + " ");
+
+                    OfferCombo offerCombo = dataSnapshot.getValue(OfferCombo.class);
+
+                    String[] ids_cat = offerCombo.getProductIds_cat().split(" ");
+                    String[] id = new String[ids_cat.length];
+                    String[] cat = new String[ids_cat.length];
+                    for (int i = 0; i < ids_cat.length; i++) {
+                        if (ids_cat[i].split("_").length > 1) {
+                            id[i] = ids_cat[i].split("_")[0];
+                            cat[i] = ids_cat[i].split("_")[1];
+                        }
+                    }
+
+                    for (int i = 0; i < ids_cat.length; i++) {
+                        DatabaseReference newRef = FirebaseDatabase.getInstance().getReference("Products").child(cat[i]).child(id[i]);
+                        newRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                ProductModel productModel = dataSnapshot.getValue(ProductModel.class);
+
+                                OrdersDetails ordersDetails = new OrdersDetails();
+                                ordersDetails.setItemName(productModel.getItemName());
+                                ordersDetails.setItemThumbImage(productModel.getItemThumbImage());
+
+                                comboList.add(ordersDetails);
+                                comboAdapter.notifyDataSetChanged();
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
         }
-        return orders;
+
     }
 
     private void setUserNameAndUserPhoneNumber() {
