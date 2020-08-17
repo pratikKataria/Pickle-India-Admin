@@ -26,7 +26,8 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 
 public class HomeActivity extends AppCompatActivity {
-    private ArrayList<String> ordersArrayList = new ArrayList<>();
+    private static final String TAG = "HomeActivity";
+    private ArrayList<Orders> ordersArrayList = new ArrayList<>();
     private ArrayList<Orders> list = new ArrayList<>();
     private OrdersRecyclerViewAdapter ordersRecyclerViewAdapter;
 
@@ -59,6 +60,8 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Log.e(TAG, "onDataChange: " + snapshot);
+
                     Orders orders = snapshot.getValue(Orders.class);
                     if (list.contains(orders)) {
                         if (orders.getOrderStatus() == 398 || orders.getOrderStatus() == 324) {
@@ -68,11 +71,12 @@ public class HomeActivity extends AppCompatActivity {
                             ordersRecyclerViewAdapter.notifyDataSetChanged();
                         }
                     } else {
-                        if (orders.getOrderStatus() == 398 || orders.getOrderStatus() == 324)
-                            return;
-                        list.add(0,orders);
-                        ordersArrayList.add(0, orders.toString());
-                        ordersRecyclerViewAdapter.notifyDataSetChanged();
+                        if (orders.getOrderStatus() != 398 || orders.getOrderStatus() != 324) {
+                            list.add(0,orders);
+                            ordersArrayList.add(0, orders);
+                            ordersRecyclerViewAdapter.notifyDataSetChanged();
+                        }
+
                     }
                 }
             }

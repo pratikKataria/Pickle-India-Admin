@@ -2,6 +2,7 @@ package com.bytemint.pickleadmin.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
@@ -10,17 +11,18 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bytemint.pickleadmin.R;
 import com.bytemint.pickleadmin.databinding.CardviewOrdersBinding;
+import com.bytemint.pickleadmin.model.Orders;
 
 import java.util.ArrayList;
 
 public class OrdersRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     Context context;
-    ArrayList<String> ordersList;
+    ArrayList<Orders> ordersList;
 
     CardViewOnClickListener cardViewOnClickListener;
 
-    public OrdersRecyclerViewAdapter(Context context, ArrayList<String> ordersList) {
+    public OrdersRecyclerViewAdapter(Context context, ArrayList<Orders> ordersList) {
         this.ordersList = ordersList;
         this.context = context;
     }
@@ -67,8 +69,9 @@ public class OrdersRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
 
         }
 
-        public void setText(String text) {
-            ordersBinding.textview.setText(text);
+        public void setText(Orders text) {
+            ordersBinding.textview.setText(text.toString());
+            ordersBinding.allOverTotalText.setText("Total Cost:  "+text.getAllOverTotal());
             ordersBinding.executePendingBindings();
         }
     }

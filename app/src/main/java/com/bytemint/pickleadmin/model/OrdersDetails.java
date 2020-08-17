@@ -69,12 +69,12 @@ public class OrdersDetails {
     @Override
     public String toString() {
         return "OrdersDetails{" +
-                ", itemId='" + itemId + '\'' +
-                ", date='" + itemThumbImage + '\'' +
-                ", itemQty=" + itemQty +
-                ", itemBasePrice=" + itemBasePrice +
-                ", itemCategory='" + itemCategory + '\'' +
-                ", status ='" + status + '\'' +' ' +  + '}';
+                "itemId='" + itemId + '\'' + "\n" +
+                "date='" + itemThumbImage + '\'' + "\n" +
+                "itemQty=" + itemQty + "\n" +
+                "itemBasePrice=" + itemBasePrice + "\n" +
+                "itemCategory='" + itemCategory + '\'' + "\n" +
+                "status ='" + status + '\'';
     }
 
     @Override

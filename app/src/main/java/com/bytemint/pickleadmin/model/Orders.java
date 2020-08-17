@@ -1,5 +1,7 @@
 package com.bytemint.pickleadmin.model;
 
+import android.util.Log;
+
 import androidx.annotation.Nullable;
 
 import java.io.Serializable;
@@ -20,11 +22,12 @@ public class Orders implements Serializable {
 
     private String comboId;
     private double comboPrice;
+    private int comboQuantity;
 
     public boolean isPastOrder;
     public int totalProduct;
 
-    public Orders(long date, String orderDetailsIds, String orderId, int orderStatus, double pcoinsSpent, String userId, double subTotal, String paymentMethod, String deliveryTime, String address, int shipping, String comboId, double comboPrice) {
+    public Orders(long date, String orderDetailsIds, String orderId, int orderStatus, double pcoinsSpent, String userId, double subTotal, String paymentMethod, String deliveryTime, String address, int shipping, String comboId, double comboPrice, int comboQuantity) {
         this.date = date;
         this.orderDetailsIds = orderDetailsIds;
         this.orderId = orderId;
@@ -38,6 +41,7 @@ public class Orders implements Serializable {
         this.shipping = shipping;
         this.comboId = comboId;
         this.comboPrice = comboPrice;
+        this.comboQuantity = comboQuantity;
     }
 
     public Orders() {}
@@ -172,4 +176,18 @@ public class Orders implements Serializable {
                 " comboPrice = " + comboPrice +"\n"+
                 " totalProduct = " + totalProduct +"\n";
     }
+
+    public int getComboQuantity() {
+        return comboQuantity;
+    }
+
+    public void setComboQuantity(int comboQuantity) {
+        this.comboQuantity = comboQuantity;
+    }
+
+    public double getAllOverTotal() {
+        Log.e("orders ", "" + ((shipping + comboPrice + subTotal) - pcoinsSpent));
+        return ((getShipping() + getComboPrice() + getSubTotal()) - getPcoinsSpent());
+    }
+
 }
