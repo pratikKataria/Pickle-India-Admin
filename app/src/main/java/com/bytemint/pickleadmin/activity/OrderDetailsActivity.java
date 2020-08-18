@@ -98,36 +98,41 @@ public class OrderDetailsActivity extends AppCompatActivity {
 
                     OfferCombo offerCombo = dataSnapshot.getValue(OfferCombo.class);
 
-                    String[] ids_cat = offerCombo.getProductIds_cat().split(" ");
-                    String[] id = new String[ids_cat.length];
-                    String[] cat = new String[ids_cat.length];
-                    for (int i = 0; i < ids_cat.length; i++) {
-                        if (ids_cat[i].split("_").length > 1) {
-                            id[i] = ids_cat[i].split("_")[0];
-                            cat[i] = ids_cat[i].split("_")[1];
+                    if (offerCombo != null) {
+                        String[] ids_cat = offerCombo.getProductIds_cat().split(" ");
+                        String[] id = new String[ids_cat.length];
+                        String[] cat = new String[ids_cat.length];
+                        for (int i = 0; i < ids_cat.length; i++) {
+                            if (ids_cat[i].split("_").length > 1) {
+                                id[i] = ids_cat[i].split("_")[0];
+                                cat[i] = ids_cat[i].split("_")[1];
+                            }
                         }
-                    }
 
-                    for (int i = 0; i < ids_cat.length; i++) {
-                        DatabaseReference newRef = FirebaseDatabase.getInstance().getReference("Products").child(cat[i]).child(id[i]);
-                        newRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                ProductModel productModel = dataSnapshot.getValue(ProductModel.class);
+                        for (int i = 0; i < ids_cat.length; i++) {
+                            DatabaseReference newRef = FirebaseDatabase.getInstance().getReference("Products").child(cat[i]).child(id[i]);
+                            newRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    ProductModel productModel = dataSnapshot.getValue(ProductModel.class);
 
-                                OrdersDetails ordersDetails = new OrdersDetails();
-                                ordersDetails.setItemName(productModel.getItemName());
-                                ordersDetails.setItemThumbImage(productModel.getItemThumbImage());
+                                    if (productModel != null) {
+                                        OrdersDetails ordersDetails = new OrdersDetails();
+                                        ordersDetails.setItemName(productModel.getItemName());
+                                        ordersDetails.setItemThumbImage(productModel.getItemThumbImage());
 
-                                comboList.add(ordersDetails);
-                                comboAdapter.notifyDataSetChanged();
-                            }
+                                        comboList.add(ordersDetails);
+                                        comboAdapter.notifyDataSetChanged();
+                                    }
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                }
 
-                            }
-                        });
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
+                        }
                     }
                 }
 
@@ -147,7 +152,7 @@ public class OrderDetailsActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Map<String, String> user = (Map<String, String>) dataSnapshot.getValue();
-                if (user != null) {
+                if (user != null && user.containsKey("username") && user.containsKey("userPhoneNo")) {
                     String name = user.get("username");
                     String phoneNo = user.get("userPhoneNo");
                     orderDetailsBinding.username.setText(name);
@@ -173,8 +178,10 @@ public class OrderDetailsActivity extends AppCompatActivity {
                 Log.e("OrderDetailsActivity", dataSnapshot + " ");
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     OrdersDetails ordersDetails = snapshot.getValue(OrdersDetails.class);
-                    ordersDetailsArrayList.add(ordersDetails);
-                    adapter.notifyDataSetChanged();
+                    if (ordersDetails != null) {
+                        ordersDetailsArrayList.add(ordersDetails);
+                        adapter.notifyDataSetChanged();
+                    }
                 }
             }
 

@@ -136,9 +136,12 @@ public class Orders implements Serializable {
 
     @Override
     public boolean equals(@Nullable Object obj) {
+        Log.e("order", "equals: instance of " + (obj instanceof Orders) );
+
         if (obj instanceof Orders) {
             Orders orders = (Orders) obj;
-            return orders.getOrderId().equals(orderId);
+            Log.e("order", "equals: " + orderId + " get order" + orders.getOrderId() );
+            return orders.getOrderId().matches(orderId);
         }
         return false;
     }
@@ -186,7 +189,6 @@ public class Orders implements Serializable {
     }
 
     public double getAllOverTotal() {
-        Log.e("orders ", "" + ((shipping + comboPrice + subTotal) - pcoinsSpent));
         return ((getShipping() + getComboPrice() + getSubTotal()) - getPcoinsSpent());
     }
 

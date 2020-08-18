@@ -27,8 +27,7 @@ import java.util.ArrayList;
 
 public class HomeActivity extends AppCompatActivity {
     private static final String TAG = "HomeActivity";
-    private ArrayList<Orders> ordersArrayList = new ArrayList<>();
-    private ArrayList<Orders> list = new ArrayList<>();
+    private final ArrayList<Orders> ordersArrayList = new ArrayList<>();
     private OrdersRecyclerViewAdapter ordersRecyclerViewAdapter;
 
     @Override
@@ -38,10 +37,11 @@ public class HomeActivity extends AppCompatActivity {
 
         RecyclerView recyclerView = binding.recyclerView;
         ordersRecyclerViewAdapter = new OrdersRecyclerViewAdapter(this, ordersArrayList);
-        ordersRecyclerViewAdapter.setCardViewOnClickListener(new OrdersRecyclerViewAdapter.CardViewOnClickListener() {
-            @Override
-            public void onClick(int position) {
-                startActivity(new Intent(HomeActivity.this, OrderDetailsActivity.class).putExtra("userId", list.get(position)));
+        ordersRecyclerViewAdapter.setCardViewOnClickListener(position -> {
+            try {
+                startActivity(new Intent(HomeActivity.this, OrderDetailsActivity.class).putExtra("userId", ordersArrayList.get(position)));
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         });
         recyclerView.setAdapter(ordersRecyclerViewAdapter);
@@ -49,6 +49,8 @@ public class HomeActivity extends AppCompatActivity {
         getData();
 
         binding.refresh.setOnClickListener(view -> {
+            ordersArrayList.clear();
+            ordersRecyclerViewAdapter.notifyDataSetChanged();
             getData();
         });
     }
@@ -56,28 +58,21 @@ public class HomeActivity extends AppCompatActivity {
     private void getData() {
 
         Query query = FirebaseDatabase.getInstance().getReference("Orders");
+        query.keepSynced(true);
         query.orderByChild("date").limitToFirst(50).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Log.e(TAG, "onDataChange: " + snapshot);
-
+//                    Log.e(TAG, "onDataChange: " + snapshot.getKey());
                     Orders orders = snapshot.getValue(Orders.class);
-                    if (list.contains(orders)) {
-                        if (orders.getOrderStatus() == 398 || orders.getOrderStatus() == 324) {
-                            int indexOf = list.indexOf(orders);
-                            list.remove(indexOf);
-                            ordersArrayList.remove(indexOf);
-                            ordersRecyclerViewAdapter.notifyDataSetChanged();
-                        }
-                    } else {
-                        if (orders.getOrderStatus() != 398 || orders.getOrderStatus() != 324) {
-                            list.add(0,orders);
-                            ordersArrayList.add(0, orders);
-                            ordersRecyclerViewAdapter.notifyDataSetChanged();
-                        }
 
-                    }
+                        if (orders.getOrderStatus() != 398 && orders.getOrderStatus() != 324) {
+                            Log.e(TAG, "onDataChange: " + ordersArrayList.contains(orders) );
+                            if (!ordersArrayList.contains(orders)) {
+                                ordersArrayList.add(0, orders);
+                                ordersRecyclerViewAdapter.notifyDataSetChanged();
+                            }
+                        }
                 }
             }
 
